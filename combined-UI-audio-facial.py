@@ -9,10 +9,10 @@ from keras.preprocessing import image
 from PIL import Image, ImageTk
 
 # Load the audio model
-audio_model = load_model('audio_model.h5')
+audio_model = load_model('model-audio-emotion.h5')
 
 # Load the video model
-video_model = load_model('ResNet50-face.h5')
+video_model = load_model('model-facial-emotion.h5')
 
 # Initialize the face cascade classifier
 face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
@@ -116,7 +116,7 @@ def detect_emotions_from_audio():
     # Get the most common prediction among all frames
     most_common_prediction = Counter(predicted_labels).most_common(1)[0][0]
 
-    # Print the final predicted emotion
+    # Update UI with predicted emotion
     emotion_label.config(text="Predicted emotion from audio: " + most_common_prediction)
 
 # Function to close the application
@@ -125,11 +125,18 @@ def close_application():
 
 # Function to start audio recording
 def start_audio_recording():
+    # Update UI to show recording status
+    emotion_label.config(text="Recording...")
+    # Start audio recording
     audio_recorder.start_recording(duration=3)
+    # Schedule stop_audio_recording to be called after 3 seconds
+    window.after(3000, stop_audio_recording)
 
 # Function to stop audio recording and detect emotions
 def stop_audio_recording():
+    # Stop audio recording
     audio_recorder.stop_recording()
+    # Detect emotions from audio
     detect_emotions_from_audio()
 
 # Create the main window
@@ -145,12 +152,9 @@ video_label.pack()
 emotion_label = tk.Label(window)
 emotion_label.pack()
 
-# Create buttons to start and stop audio recording
+# Create a button to start audio recording
 start_button = tk.Button(window, text="Start Recording", command=start_audio_recording)
 start_button.pack()
-
-stop_button = tk.Button(window, text="Stop Recording and Predict", command=stop_audio_recording)
-stop_button.pack()
 
 # Create a button to close the application
 close_button = tk.Button(window, text="Close", command=close_application)
